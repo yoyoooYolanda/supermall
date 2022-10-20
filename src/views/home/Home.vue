@@ -6,8 +6,11 @@
     <home-swiper :banners="banners"></home-swiper>
     <recommend-view :recommends="recommends"></recommend-view>
     <feature-view></feature-view>
-    <tab-control :titles="['流行','精选','新款']" class="tab-control"></tab-control>
-
+    <tab-control :titles="['流行','精选','新款']" 
+                  class="tab-control" 
+                  @tabClick = "tabClick">
+    </tab-control>
+    <goods-list :goods="showGoodsList"></goods-list>
     <ul>
       <li>列表1</li>
       <li>列表2</li>
@@ -116,6 +119,7 @@
 <script>
 import NavBar from 'components/common/navbar/NavBar.vue'
 import TabControl from 'components/content/tabControl/TabControl.vue'
+import GoodsList from 'components/content/goods/GoodsList.vue'
 
 import HomeSwiper from './childComps/HomeSwiper.vue'
 import RecommendView from './childComps/RecommendView.vue'
@@ -131,7 +135,7 @@ export default {
     HomeSwiper,
     RecommendView,
     FeatureView,
-    
+    GoodsList
   },
   data() {
     return {
@@ -141,7 +145,8 @@ export default {
         'pop': {page: 0, list: []},
         'new': {page: 0, list: []},
         'sell': {page: 0, list: []}
-      }
+      },
+      currentType: 'pop',
     }
   },
   created() {
@@ -154,6 +159,21 @@ export default {
     this.getHomeGoods('sell');
   },
   methods: {
+    //事件监听相关方法
+    tabClick(index) {
+      switch(index) {
+        case 0: 
+          this.currentType = 'pop';
+          break;
+        case 1:
+          this.currentType = 'new';
+          break;
+        case 2:
+          this.currentType = 'sell';
+          break;
+      }
+    },
+    //网络请求相关方法
     getHomeMultidata() {
       getHomeMultidata().then(res => {
         // console.log(res);
@@ -164,12 +184,17 @@ export default {
     getHomeGoods(type) {
       const page = this.goods[type].page + 1;
       getHomeGoods(type, page).then(res => {
-        console.log(res);
+        // console.log(res);
         //将返回的数据添加到goods对应类目的list中
         //...arr展开运算符es6
         this.goods[type].list.push(...res.data.list);
         this.goods[type].page += 1;
       })
+    }
+  },
+  computed: {
+    showGoodsList() {
+      return this.goods[this.currentType].list
     }
   }
 }
@@ -179,7 +204,6 @@ export default {
   .home-nav {
     background-color: var(--color-tint);
     color: #fff;
-
     position: fixed;
     top: 0;
     left: 0;
